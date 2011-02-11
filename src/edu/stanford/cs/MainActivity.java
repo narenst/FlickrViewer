@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
         	});
         	
         	startPos += Constants.MAX_PHOTOS/galleryIds.length;
+        	
         }
         
         //Set the density value - used later
