@@ -54,35 +54,6 @@ public class MainActivity extends Activity {
         	startPos += Constants.MAX_PHOTOS/galleryIds.length;
         }
         
-        /*
-        g = (Gallery) findViewById(R.id.Gallery02);
-        g.setAdapter(new ImageAdapter(this));
-
-        g.setOnItemClickListener(new OnItemClickListener() {
-        	public void onItemClick(AdapterView parent, View v, int position, long id) {
-        		Toast.makeText(MainActivity.this, "2: " + position, Toast.LENGTH_SHORT).show();
-        	}
-        });
-
-
-        g = (Gallery) findViewById(R.id.Gallery03);
-        g.setAdapter(new ImageAdapter(this));
-
-        g.setOnItemClickListener(new OnItemClickListener() {
-        	public void onItemClick(AdapterView parent, View v, int position, long id) {
-        		Toast.makeText(MainActivity.this, "2: " + position, Toast.LENGTH_SHORT).show();
-        	}
-        });
-        
-        g = (Gallery) findViewById(R.id.Gallery04);
-        g.setAdapter(new ImageAdapter(this));
-
-        g.setOnItemClickListener(new OnItemClickListener() {
-        	public void onItemClick(AdapterView parent, View v, int position, long id) {
-        		Toast.makeText(MainActivity.this, "2: " + position, Toast.LENGTH_SHORT).show();
-        	}
-        });
-        */
         //Set the density value - used later
         screenDensity = getApplicationContext().getResources().getDisplayMetrics().density;
     }
