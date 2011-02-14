@@ -2,6 +2,7 @@ package edu.stanford.cs;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,12 +11,14 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Gallery;
 import android.widget.ImageView;
 
@@ -27,55 +30,87 @@ import android.widget.ImageView;
  */
 
 public class MainActivity extends Activity {
-	protected Photo[] photoResults;
+//	protected Photo[] photoResults;
 	protected float screenDensity;
-	private int startPos = 0;
+	EditText mSearchBox;
+	Button mSearchButton;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        photoResults = Server.search("india");
+        mSearchBox = (EditText)findViewById(R.id.searchBox);
+        mSearchButton = (Button)findViewById(R.id.searchBtn);
+        
+        mSearchButton.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				String query = mSearchBox.getText().toString();
+				query = query.trim();
+				if(query.length() > 3)
+					executeQuery(query);
+			}
+		});
+        //executeQuery("switzerland");
+        //Set the density value - used later
+        screenDensity = getApplicationContext().getResources().getDisplayMetrics().density;
+    }
+    
+    void executeQuery(String query){
+
+        Photo[] photoResults = Server.getInstance().search(query);
         
         //Get the galleries set up - Guess I will need 4 of them.
         final int galleryIds[] = {R.id.Gallery01, R.id.Gallery02, R.id.Gallery03, R.id.Gallery04};
-        
+        int photoResultPos = 0;
         for(final int gIds : galleryIds){
         	Gallery g = (Gallery) findViewById(gIds);
-        	ImageAdapter imgAdapter = new ImageAdapter(this, startPos); 
+        	ArrayList<Photo> photoList = new ArrayList<Photo>();
+        	
+        	for(int i=0; i<Constants.MAX_PHOTOS/4; i++){
+        		photoList.add(photoResults[photoResultPos++]);
+        	}
+        	
+        	final ImageAdapter imgAdapter = new ImageAdapter(this, photoList, query); 
         	g.setAdapter(imgAdapter);
-
-        	final int galleryJump = Constants.MAX_PHOTOS/galleryIds.length; 
+        	g.setSelection(1);
+        	
         	g.setOnItemClickListener(new OnItemClickListener() {
         		public void onItemClick(AdapterView parent, View v, int position, long id) {
-        			callPhotoActivity(position + (gIds - galleryIds[0])*galleryJump);
+        			callPhotoActivity(imgAdapter.getPhotos().get(position));
         		}
         	});
-        	startPos += galleryJump;
         }
-        
-        //Set the density value - used later
-        screenDensity = getApplicationContext().getResources().getDisplayMetrics().density;
     }
     
     //From android example
     public class ImageAdapter extends BaseAdapter {
         int mGalleryItemBackground;
         private Context mContext;
-        private int mStartPos;
+//        private int mStartPos;
+        private ArrayList<Photo> mPhotos;
+        int dataThresholdPos;
+        String mQuery;
 
-        public ImageAdapter(Context c, int startPos) {
+        public ImageAdapter(Context c, ArrayList<Photo> photoList, String query) {
             mContext = c;
             TypedArray a = c.obtainStyledAttributes(R.styleable.Gallery1);
             mGalleryItemBackground = a.getResourceId(
                     R.styleable.Gallery1_android_galleryItemBackground, 0);
             a.recycle();
-            mStartPos = startPos;
+            mPhotos = photoList;
+            dataThresholdPos = 0;
+            mQuery = query;
+//          mStartPos = startPos;
         }
 
+        public ArrayList<Photo> getPhotos(){
+        	return mPhotos;
+        }
+        
         public int getCount() {
-        	return photoResults.length;
+        	//return mPhotos.size();
+        	return Constants.GALLERY_MAX_PHOTOS;
         }
 
         public Object getItem(int position) {
@@ -87,11 +122,14 @@ public class MainActivity extends Activity {
         }
 
         public View getView(int position, View convertView, ViewGroup parent) {
+        	//See if over threshold, and get more data
+        	if(position >= dataThresholdPos){
+        		dataThresholdPos += Constants.MAX_PHOTOS;
+        		getMoreData();
+        	}
+        	
             ImageView i = new ImageView(mContext);
-
-            i.setImageBitmap(loadImageFromUrl(photoResults[position + mStartPos].getThumbUrl()));
-            Log.d("Main ", "IMG Url : " + position + " : " + photoResults[position].getThumbUrl()
-            	+ " screenDensity : " + screenDensity);
+            i.setImageBitmap(loadImageFromUrl(mPhotos.get(position).getThumbUrl()));
 
             //Support for different screen resolutions
             int imgSize = (int)(120*screenDensity);
@@ -100,27 +138,29 @@ public class MainActivity extends Activity {
             i.setBackgroundResource(mGalleryItemBackground);
             return i;
         }
+
+		private void getMoreData() {
+			new Thread(new Runnable() {
+				public void run() {
+					// TODO Auto-generated method stub
+					Photo[] photoResults = Server.getInstance().search("india");
+					for(Photo photo : photoResults){
+		        		mPhotos.add(photo);
+		        	}
+				}
+			}).start();
+		}
     }
     
-    private void callPhotoActivity(int startPos) {
-    	Photo update = Server.getInfo(photoResults[startPos]);
+    private void callPhotoActivity(Photo photo) {
+    	//Photo update = Server.getInstance().getInfo(photo);
     	Intent getId = new Intent().setClass(this, PhotoActivity.class);
-    	getId.putExtra("photoUrl", update.getUrl());
-    	getId.putExtra("photoTitle", update.getName());
-    	getId.putExtra("photoPageUrl", update.getFlickrUrl());
+    	getId.putExtra("photoUrl", photo.getUrl());
+    	getId.putExtra("id", photo.getId());
+    	//getId.putExtra("photoTitle", update.getName());
+    	//getId.putExtra("photoPageUrl", update.getFlickrUrl());
 		startActivity(getId);
 	}
-
-//    public Drawable loadImageFromUrl(String thumbUrl) {
-//    	try
-//    	{
-//    		InputStream is = (InputStream) new URL(thumbUrl).getContent();
-//    		Drawable d = Drawable.createFromStream(is, "src name");
-//    		return d;
-//    	}catch (Exception e) {
-//    		return null;
-//    	}
-//    }
 
     public Bitmap loadImageFromUrl(String imageUrl) {
     	try

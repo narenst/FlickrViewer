@@ -7,9 +7,26 @@ import org.json.JSONObject;
 import android.util.Log;
 
 public final class Server {
-	public static Photo[] search(String query){
+	
+	private static final Server INSTANCE = new Server();
+	private int pageNumber;
+	 
+    // Private constructor prevents instantiation from other classes
+    private Server() {
+    	pageNumber = 1;
+    }
+ 
+    public static Server getInstance() {
+        return INSTANCE;
+    }
+
+	public Photo[] search(String query){
 		String url = Constants.flickrAPI + "?method=flickr.photos.search&api_key=" 
-			+ Constants.API_KEY + "&format=json&text=" + query + "&per_page=" + Constants.MAX_PHOTOS;
+			+ Constants.API_KEY + "&format=json&per_page=" + 
+			Constants.MAX_PHOTOS + "&page=" + pageNumber + "&text=" + query ;
+		url = url.replaceAll(" ", "%20");
+		pageNumber++;
+		
 		Log.d("Server", "Flickr URL : " + url);
 		JSONObject jsonObj = RestClient.connect(url);
 		Photo[] results = new Photo[Constants.MAX_PHOTOS];
@@ -33,7 +50,7 @@ public final class Server {
 		return results;
 	}
 	
-	public static Photo getInfo(Photo photo){
+	public Photo getInfo(Photo photo){
 		String url = Constants.flickrAPI + "?method=flickr.photos.getInfo&api_key=" 
 			+ Constants.API_KEY + "&format=json&photo_id=" + photo.getId();
 		Log.d("Server", "Flickr getInfo URL : " + url);
