@@ -4,6 +4,11 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
  
+/**
+ * 
+ * @author Naren
+ * SplashScreen
+ */
 public class SplashScreen extends Activity {
    /** Called when the activity is first created. */
    @Override
