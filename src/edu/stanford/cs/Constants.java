@@ -6,4 +6,5 @@ public class Constants {
 	public static final int MAX_PHOTOS = 20;
 	public static final int GALLERY_MAX_PHOTOS = 200;
 	public static String flickrAPI = "http://api.flickr.com/services/rest/";
+	public static final int RETRY_ATTEMPTS = 3;
 }

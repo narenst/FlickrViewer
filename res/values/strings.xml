@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="go">Go</string>
-    <string name="defaultStr">Golden Gate</string>
+    <string name="defaultStr">scuba diving</string>
     <string name="app_name">Flicki</string>
 </resources>
-
