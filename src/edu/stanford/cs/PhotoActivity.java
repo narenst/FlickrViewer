@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -39,7 +40,17 @@ public class PhotoActivity extends Activity {
         String photoUrl = getIntent().getStringExtra("photoUrl");
         String id = getIntent().getStringExtra("id");
 
+        Log.d("PhotoActivity", "photoUrl : " + photoUrl);
+        
         Bitmap bm = loadImageFromUrl(photoUrl);
+        int retryCount = 0;
+        
+        while(bm == null){
+        	Log.d("PhotoActivity", "#FAIL");
+        	bm = loadImageFromUrl(photoUrl);
+        	if(++retryCount > Constants.RETRY_ATTEMPTS)
+        		break;
+        }
 
         mImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
         mImageView.setImageBitmap(bm);

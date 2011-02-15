@@ -1,0 +1,26 @@
+Sample Android Project
+Flicki = Flickr Search Application
+
+Searches for public photos on Flickr for any given query. This is intended to view any specific user's images. Its meant for leisure viewing of public Flickr photos which I like to do a lot!
+
+To Use:
+Download APK (in downloads) and install.
+Start app and search away
+
+Features
+I have tried a different presentation of search results here.
+There are 4 rows of results that are flickable (Android Gallery objects)
+Clicking on the thumbnail opens the full image.
+Click on the name here to go to the Flickr page.
+
+Techniques
+Lazy loading of results - First only top 20 image results are retrieved from Flickr. As the user starts browsing, Asynchronous tasks retrieve more results.
+
+The thumbnails are in a gallery - that lazy loads the thumbnail only when the user flicks.
+
+Improvements
+Some images fail to download. I have added a retry option that makes 3 attempts to download the image. Need to figure out the right way.
+
+Need to download the next few thumbnails before the user flicks.
+
+More metadata from flickr

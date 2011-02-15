@@ -11,6 +11,7 @@ import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -34,7 +35,7 @@ public class MainActivity extends Activity {
 	protected float screenDensity;
 	EditText mSearchBox;
 	Button mSearchButton;
-	
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +52,6 @@ public class MainActivity extends Activity {
 					executeQuery(query);
 			}
 		});
-        //executeQuery("switzerland");
         //Set the density value - used later
         screenDensity = getApplicationContext().getResources().getDisplayMetrics().density;
     }
@@ -129,7 +129,18 @@ public class MainActivity extends Activity {
         	}
         	
             ImageView i = new ImageView(mContext);
-            i.setImageBitmap(loadImageFromUrl(mPhotos.get(position).getThumbUrl()));
+            
+            Bitmap bm = loadImageFromUrl(mPhotos.get(position).getThumbUrl());
+            int retryCount = 0;
+            
+            while(bm == null){
+            	Log.d("PhotoActivity", "#FAIL");
+            	bm = loadImageFromUrl(mPhotos.get(position).getThumbUrl());
+            	if(++retryCount > Constants.RETRY_ATTEMPTS)
+            		break;
+            }
+            
+            i.setImageBitmap(bm);
 
             //Support for different screen resolutions
             int imgSize = (int)(120*screenDensity);
@@ -143,7 +154,7 @@ public class MainActivity extends Activity {
 			new Thread(new Runnable() {
 				public void run() {
 					// TODO Auto-generated method stub
-					Photo[] photoResults = Server.getInstance().search("india");
+					Photo[] photoResults = Server.getInstance().search(mQuery);
 					for(Photo photo : photoResults){
 		        		mPhotos.add(photo);
 		        	}
